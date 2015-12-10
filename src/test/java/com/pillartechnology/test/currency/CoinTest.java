@@ -18,6 +18,7 @@ public class CoinTest {
 		CoinEntity _coin = _coinFactory.createDime();
 		System.out.println("\nCOIN");
 		System.out.println(_coin.coinType);
+		System.out.println(_coin.country);
 		System.out.println(_coin.diameterInMillimeters);
 		System.out.println(_coin.thicknessInMillimeters);
 		System.out.println(_coin.massInGrams);

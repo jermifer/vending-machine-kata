@@ -2,6 +2,9 @@ package com.pillartechnology.test.usCurrency;
 
 import static org.junit.Assert.*;
 
+import java.math.BigDecimal;
+
+import com.pillartechnology.currency.CoinEntity;
 import com.pillartechnology.currency.usCurrency.*;
 
 import org.junit.Before;
@@ -21,30 +24,19 @@ public class USCoinsTest {
 	}
 
 	@Test
-	public final void dime() {
-		System.out.println("\nDIME");
-		System.out.println(_dime.value());
-		System.out.println(_dime.diameterInMillimeters());
-		System.out.println(_dime.thicknessInMillimeters());
-		System.out.println(_dime.massInGrams());
-	}
-	
-	@Test
-	public final void goldDollar() {
-		System.out.println("\nGOLD DOLLAR");
-		System.out.println(_gold_dollar.value());
-		System.out.println(_gold_dollar.diameterInMillimeters());
-		System.out.println(_gold_dollar.thicknessInMillimeters());
-		System.out.println(_gold_dollar.massInGrams());
-	}
-	
-	@Test
-	public final void halfDollar() {
-		System.out.println("\nHALF DOLLAR");
-		System.out.println(_half_dollar.value());
-		System.out.println(_half_dollar.diameterInMillimeters());
-		System.out.println(_half_dollar.thicknessInMillimeters());
-		System.out.println(_half_dollar.massInGrams());
+	public final void coin() {
+		CoinEntity _coin = new CoinEntity(
+			"Plastic", 
+			(new BigDecimal("0.1")), 
+			17.91, 
+			1.35, 
+			(new BigDecimal("3.55"))
+		);
+		System.out.println("\nCOIN");
+		System.out.println(_coin.coinType);
+		System.out.println(_coin.diameterInMillimeters);
+		System.out.println(_coin.thicknessInMillimeters);
+		System.out.println(_coin.massInGrams);
 	}
 
 }

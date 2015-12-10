@@ -16,7 +16,15 @@ public class CoinTest {
 		CoinFactory _coinFactory = new CoinFactory();
 		
 		CoinEntity _coin = _coinFactory.createDime();
-		System.out.println("\nCOIN");
+		System.out.println("\n");
+		System.out.println(_coin.coinType);
+		System.out.println(_coin.currencyCode);
+		System.out.println(_coin.diameterInMillimeters);
+		System.out.println(_coin.thicknessInMillimeters);
+		System.out.println(_coin.massInGrams);
+		
+		_coin = _coinFactory.createPenny();
+		System.out.println("\n");
 		System.out.println(_coin.coinType);
 		System.out.println(_coin.currencyCode);
 		System.out.println(_coin.diameterInMillimeters);

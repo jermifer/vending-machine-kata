@@ -28,13 +28,13 @@ public class CoinFactory {
 	 */
 	public CoinEntity createPenny() {
 		CoinEntity _coin = new CoinEntity(
-				"Penny",
-				"USD",
-				new BigDecimal("0.01"),
-				17.91,
-				1.35,
-				new BigDecimal("2.268")
-				);
+			"Penny",
+			"USD",
+			new BigDecimal("0.01"),
+			19.05,
+			1.55,
+			new BigDecimal("2.5")
+		);
 		
 		return _coin;
 	}

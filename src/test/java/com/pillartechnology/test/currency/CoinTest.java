@@ -44,5 +44,14 @@ public class CoinTest {
 		} else {
 			System.out.println("Nickel successfully retrieved.");
 		}
+		
+		/*CoinEntity _10cents = _coinage.coinByValue("0.1");
+		
+		System.out.println("\n");
+		if( _10cents == null ) {
+			System.out.println("No valid coinage worth 10 cents was found.");
+		} else {
+			System.out.println(_10cents.coinType +  " successfully retrieved.");
+		}*/
 	}
 }

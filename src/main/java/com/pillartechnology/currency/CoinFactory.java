@@ -7,10 +7,13 @@ import java.util.Vector;
 import com.pillartechnology.currency.*;
 
 public class CoinFactory {	
+	/**
+	 * createDime
+	 */
 	public CoinEntity createDime() {
 		CoinEntity _coin = new CoinEntity(
 			"Dime",
-			"US",
+			"USD",
 			new BigDecimal("0.1"),
 			17.91,
 			1.35,
@@ -20,11 +23,14 @@ public class CoinFactory {
 		return _coin;
 	}
 	
+	/**
+	 * createPenny
+	 */
 	public CoinEntity createPenny() {
 		CoinEntity _coin = new CoinEntity(
-				"Dime",
-				"US",
-				new BigDecimal("0.1"),
+				"Penny",
+				"USD",
+				new BigDecimal("0.01"),
 				17.91,
 				1.35,
 				new BigDecimal("2.268")

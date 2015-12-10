@@ -14,8 +14,11 @@ public class CoinTest {
 	@Test
 	public final void coin() {
 		CoinFactory _coinFactory = new CoinFactory();
+		CoinageCollection _coinage = new CoinageCollection();
 		
 		CoinEntity _coin = _coinFactory.createDime();
+		_coinage.addCoin(_coin);
+		
 		System.out.println("\n");
 		System.out.println(_coin.coinType);
 		System.out.println(_coin.currencyCode);
@@ -24,12 +27,22 @@ public class CoinTest {
 		System.out.println(_coin.massInGrams);
 		
 		_coin = _coinFactory.createPenny();
+		_coinage.addCoin(_coin);
+		
 		System.out.println("\n");
 		System.out.println(_coin.coinType);
 		System.out.println(_coin.currencyCode);
 		System.out.println(_coin.diameterInMillimeters);
 		System.out.println(_coin.thicknessInMillimeters);
 		System.out.println(_coin.massInGrams);
+		
+		CoinEntity _penny = _coinage.coinByType("Nickel");
+		
+		System.out.println("\n");
+		if( _penny == null ) {
+			System.out.println("Nickel is not valid coinage.");
+		} else {
+			System.out.println("Nickel successfully retrieved.");
+		}
 	}
-
 }

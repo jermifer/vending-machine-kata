@@ -10,19 +10,34 @@ import org.jmock.integration.junit4.JUnitRuleMockery;
 import org.jmock.Expectations;
 
 public class SelectItemInVendingMachineTest {
+	/**********************************************************************************************
+	 * DISPLAY INTERFACE
+	 * @author jennifer.mankin
+	 *
+	 */
 	public interface Display {
 	
 		void displayInventoryItemPrice(Price price);
 
-		void displayProductNotFoundMessage(String selectedItemName);
+		void displayProductNotFoundMessage(String selectedProductName);
 	}
 
-	public interface Inventory {
+	/**********************************************************************************************
+	 * CATALOG INTERFACE
+	 * @author jennifer.mankin
+	 *
+	 */
+	public interface Catalog {
 		
-		Price findPrice(String selectedItemName);
+		Price findPrice(String selectedProductName);
 
 	} 
 	
+	/**********************************************************************************************
+	 * PRICE CLASS
+	 * @author jennifer.mankin
+	 *
+	 */
 	public static class Price {
 		
 		private int usCents;
@@ -57,20 +72,25 @@ public class SelectItemInVendingMachineTest {
 		
 	}
 	
+	/**********************************************************************************************
+	 * SALE CONTROLLER CLASS
+	 * @author jennifer.mankin
+	 *
+	 */
 	public static class SaleController {
 
 		private final Display display;
-		private Inventory inventory;
+		private Catalog inventory;
 
-		public SaleController(Inventory inventory, Display display) {
+		public SaleController(Catalog inventory, Display display) {
 			this.inventory = inventory;
 			this.display = display;
 		}
 
-		public void onSelectItem(String selectedItemName) {
-			Price price = inventory.findPrice(selectedItemName);
+		public void onSelectItem(String selectedProductName) {
+			Price price = inventory.findPrice(selectedProductName);
 			if( price == null ) {
-				this.display.displayProductNotFoundMessage(selectedItemName);
+				this.display.displayProductNotFoundMessage(selectedProductName);
 			} else {
 				this.display.displayInventoryItemPrice(price);
 			}
@@ -80,9 +100,14 @@ public class SelectItemInVendingMachineTest {
 
 	private Mockery mockery = new Mockery();
 
+	/**********************************************************************************************
+	 * TESTPRODUCTEXISTSININVENTORY
+	 * @author jennifer.mankin
+	 *
+	 */
 	@Test
 	public final void testproductExistsInInventory() {
-		final Inventory inventory = mockery.mock(Inventory.class);
+		final Catalog inventory = mockery.mock(Catalog.class);
 		final Display display = mockery.mock(Display.class);
 		
 		mockery.checking(new Expectations() {
@@ -98,9 +123,14 @@ public class SelectItemInVendingMachineTest {
 		saleController.onSelectItem("M&Ms");
 	}
 	
+	/**********************************************************************************************
+	 * TESTPRODUCTDOESNOTEXISTININVENTORY
+	 * @author jennifer.mankin
+	 *
+	 */
 	@Test
 	public final void testproductDoesNotExistInInventory() throws Exception {
-		final Inventory inventory = mockery.mock(Inventory.class);
+		final Catalog inventory = mockery.mock(Catalog.class);
 		final Display display = mockery.mock(Display.class);
 		
 		mockery.checking(new Expectations() {

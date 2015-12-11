@@ -3,34 +3,22 @@ package com.pillartechnology.vendingMachine.model.test;
 import static org.junit.Assert.*;
 
 import java.util.Collections;
-import java.util.Map;
 
 import org.junit.Test;
 
 import com.pillartechnology.vendingMachine.controller.test.SelectItemInVendingMachineTest.*;
+import com.pillartechnology.vendingMachine.model.Catalog;
+import com.pillartechnology.vendingMachine.model.InMemoryInventory;
+import com.pillartechnology.vendingMachine.model.Price;
 
 public class InMemoryInventoryTest {
 
+	/**********************************************************************************************
+	 * TEST METHODS
+	 ********************************************************************************************/
+	
 	/**
-	 * 
-	 * @author jennifer.mankin
-	 *
-	 */
-	public class InMemoryInventory implements Catalog {
-		private Map<String, Price> pricesByProduct;
-
-		public InMemoryInventory(Map<String, Price> pricesByProduct) {
-			this.pricesByProduct = pricesByProduct;
-		}
-		
-		@Override
-		public Price findPrice(String productName) {
-			return this.pricesByProduct.get(productName);
-		}
-	}
-
-	/**
-	 * 
+	 * PRODUCTFOUND
 	 * @throws Exception
 	 */
 	@Test
@@ -40,7 +28,7 @@ public class InMemoryInventoryTest {
 	}
 	
 	/**
-	 * 
+	 * PRODUCTNOTFOUND
 	 * @throws Exception
 	 */
 	@Test
@@ -49,8 +37,12 @@ public class InMemoryInventoryTest {
 		assertEquals(null, inventory.findPrice("Snickers"));
 	}
 
+	/**********************************************************************************************
+	 * FACTORY METHODS
+	 ********************************************************************************************/
+	
 	/**
-	 * 
+	 * CREATEINVENTORYWITHOUT
 	 * @param productNameToAvoid
 	 * @return
 	 */

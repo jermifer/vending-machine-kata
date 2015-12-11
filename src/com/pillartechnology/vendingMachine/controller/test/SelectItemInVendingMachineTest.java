@@ -5,99 +5,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.pillartechnology.vendingMachine.model.Catalog;
+import com.pillartechnology.vendingMachine.model.Display;
+import com.pillartechnology.vendingMachine.model.Price;
+import com.pillartechnology.vendingMachine.model.SaleController;
+
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JUnitRuleMockery;
 import org.jmock.Expectations;
 
 public class SelectItemInVendingMachineTest {
-	/**********************************************************************************************
-	 * DISPLAY INTERFACE
-	 * @author jennifer.mankin
-	 *
-	 */
-	public interface Display {
-	
-		void displayInventoryItemPrice(Price price);
-
-		void displayProductNotFoundMessage(String selectedProductName);
-	}
-
-	/**********************************************************************************************
-	 * CATALOG INTERFACE
-	 * @author jennifer.mankin
-	 *
-	 */
-	public interface Catalog {
-		
-		Price findPrice(String selectedProductName);
-
-	}
-	
-	/**********************************************************************************************
-	 * PRICE CLASS
-	 * @author jennifer.mankin
-	 *
-	 */
-	public static class Price {
-		
-		private int usCents;
-
-		public Price(int usCents) {
-			this.usCents = usCents;
-		}
-		
-		public static Price usCents(int usCents) {
-			return new Price(usCents);
-		}
-		
-		@Override
-		public boolean equals(Object other) {
-			if( other instanceof Price ) {
-				Price that = (Price) other;
-				return ( this.usCents == that.usCents );
-			} else {
-				return false;
-			}
-		}
-		
-		@Override
-		public int hashCode() {
-			return usCents;
-		}
-		
-		@Override
-		public String toString() {
-			return "$" + usCents / 100.0d;
-		}
-		
-	}
-	
-	/**********************************************************************************************
-	 * SALE CONTROLLER CLASS
-	 * @author jennifer.mankin
-	 *
-	 */
-	public static class SaleController {
-
-		private final Display display;
-		private Catalog inventory;
-
-		public SaleController(Catalog inventory, Display display) {
-			this.inventory = inventory;
-			this.display = display;
-		}
-
-		public void onSelectItem(String selectedProductName) {
-			Price price = inventory.findPrice(selectedProductName);
-			if( price == null ) {
-				this.display.displayProductNotFoundMessage(selectedProductName);
-			} else {
-				this.display.displayInventoryItemPrice(price);
-			}
-		}
-		
-	}
-	
 	/**********************************************************************************************
 	 * TESTS
 	 **********************************************************************************************/

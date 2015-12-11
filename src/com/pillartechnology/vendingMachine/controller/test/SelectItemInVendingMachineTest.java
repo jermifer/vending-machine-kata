@@ -1,4 +1,4 @@
-package com.pillartechnology.tests;
+package com.pillartechnology.vendingMachine.controller.test;
 
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -31,7 +31,7 @@ public class SelectItemInVendingMachineTest {
 		
 		Price findPrice(String selectedProductName);
 
-	} 
+	}
 	
 	/**********************************************************************************************
 	 * PRICE CLASS
@@ -67,7 +67,7 @@ public class SelectItemInVendingMachineTest {
 		
 		@Override
 		public String toString() {
-			return "a price";
+			return "$" + usCents / 100.0d;
 		}
 		
 	}
@@ -97,6 +97,10 @@ public class SelectItemInVendingMachineTest {
 		}
 		
 	}
+	
+	/**********************************************************************************************
+	 * TESTS
+	 **********************************************************************************************/
 
 	private Mockery mockery = new Mockery();
 
@@ -112,7 +116,7 @@ public class SelectItemInVendingMachineTest {
 		
 		mockery.checking(new Expectations() {
 			{
-				allowing(inventory).findPrice(with("M&Ms"));
+				allowing(inventory).findPrice(with("M&Ms")); //"stub" implementation returns hard-coded data
 				will(returnValue(Price.usCents(100)));
 				
 				oneOf(display).displayInventoryItemPrice(Price.usCents(100));

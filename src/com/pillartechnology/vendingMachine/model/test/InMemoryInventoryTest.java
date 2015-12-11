@@ -12,13 +12,15 @@ import com.pillartechnology.vendingMachine.controller.test.SelectItemInVendingMa
 public class InMemoryInventoryTest {
 
 	public class InMemoryInventory implements Catalog {
+		private Map<String, Price> pricesByProduct;
+
 		public InMemoryInventory(Map<String, Price> pricesByProduct) {
-			// TODO Auto-generated constructor stub
+			this.pricesByProduct = pricesByProduct;
 		}
 		
 		@Override
 		public Price findPrice(String productName) {
-			return Price.usCents(75);
+			return this.pricesByProduct.get(productName);
 		}
 	}
 

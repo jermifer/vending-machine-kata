@@ -49,8 +49,13 @@ public class InMemoryInventoryTest {
 		assertEquals(null, inventory.findPrice("Snickers"));
 	}
 
+	/**
+	 * 
+	 * @param productNameToAvoid
+	 * @return
+	 */
 	private Catalog createInventoryWithout(String productNameToAvoid) {
-		return new InMemoryInventory(Collections.<String, Price> emptyMap());
+		return new InMemoryInventory(Collections.<String, Price> singletonMap("not" + productNameToAvoid, Price.usCents(50)));
 	}
 
 	/**

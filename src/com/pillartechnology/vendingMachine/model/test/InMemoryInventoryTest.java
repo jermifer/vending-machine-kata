@@ -11,6 +11,11 @@ import com.pillartechnology.vendingMachine.controller.test.SelectItemInVendingMa
 
 public class InMemoryInventoryTest {
 
+	/**
+	 * 
+	 * @author jennifer.mankin
+	 *
+	 */
 	public class InMemoryInventory implements Catalog {
 		private Map<String, Price> pricesByProduct;
 
@@ -24,10 +29,28 @@ public class InMemoryInventoryTest {
 		}
 	}
 
+	/**
+	 * 
+	 * @throws Exception
+	 */
 	@Test
 	public void productFound() throws Exception {
 		Catalog inventory = createInventoryWith("Snickers", Price.usCents(75));
 		assertEquals(Price.usCents(75), inventory.findPrice("Snickers"));
+	}
+	
+	/**
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void productNotFound() throws Exception {
+		Catalog inventory = createInventoryWithout("Snickers");
+		assertEquals(null, inventory.findPrice("Snickers"));
+	}
+
+	private Catalog createInventoryWithout(String productNameToAvoid) {
+		return new InMemoryInventory(Collections.<String, Price> emptyMap());
 	}
 
 	/**

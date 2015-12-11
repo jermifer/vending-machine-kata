@@ -13,7 +13,8 @@ public class SelectItemInVendingMachineTest {
 	public interface Display {
 	
 		void displayInventoryItemPrice(Price price);
-	
+
+		void displayProductNotFoundMessage(String selectedItemName);
 	}
 
 	public interface Inventory {
@@ -67,7 +68,12 @@ public class SelectItemInVendingMachineTest {
 		}
 
 		public void onSelectItem(String selectedItemName) {
-			this.display.displayInventoryItemPrice(inventory.findPrice(selectedItemName);
+			Price price = inventory.findPrice(selectedItemName);
+			if( price == null ) {
+				this.display.displayProductNotFoundMessage(selectedItemName);
+			} else {
+				this.display.displayInventoryItemPrice(price);
+			}
 		}
 		
 	}
@@ -85,6 +91,24 @@ public class SelectItemInVendingMachineTest {
 				will(returnValue(Price.usCents(100)));
 				
 				oneOf(display).displayInventoryItemPrice(Price.usCents(100));
+			}
+		});
+		
+		SaleController saleController = new SaleController(inventory, display);
+		saleController.onSelectItem("M&Ms");
+	}
+	
+	@Test
+	public final void testproductDoesNotExistInInventory() throws Exception {
+		final Inventory inventory = mockery.mock(Inventory.class);
+		final Display display = mockery.mock(Display.class);
+		
+		mockery.checking(new Expectations() {
+			{
+				allowing(inventory).findPrice(with("M&Ms"));
+				will(returnValue(null));
+				
+				oneOf(display).displayProductNotFoundMessage("M&Ms");
 			}
 		});
 		

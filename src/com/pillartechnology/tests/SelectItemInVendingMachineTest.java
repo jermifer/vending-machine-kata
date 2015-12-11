@@ -18,7 +18,7 @@ public class SelectItemInVendingMachineTest {
 
 	public interface Inventory {
 		
-		void findPrice(String selectedItemName);
+		Price findPrice(String selectedItemName);
 
 	} 
 	
@@ -59,13 +59,15 @@ public class SelectItemInVendingMachineTest {
 	public static class SaleController {
 
 		private final Display display;
+		private Inventory inventory;
 
 		public SaleController(Inventory inventory, Display display) {
+			this.inventory = inventory;
 			this.display = display;
 		}
 
 		public void onSelectItem(String selectedItemName) {
-			this.display.displayInventoryItemPrice(Price.usCents(100));
+			this.display.displayInventoryItemPrice(inventory.findPrice(selectedItemName);
 		}
 		
 	}

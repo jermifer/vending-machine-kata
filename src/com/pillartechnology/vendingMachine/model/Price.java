@@ -17,6 +17,10 @@ public class Price {
 		return new Price(usCents);
 	}
 	
+	public double getUSDollar() {
+		return this.usCents / 100.0d;
+	}
+	
 	@Override
 	public boolean equals(Object other) {
 		if( other instanceof Price ) {
@@ -34,7 +38,7 @@ public class Price {
 	
 	@Override
 	public String toString() {
-		return "$" + usCents / 100.0d;
+		return "$" + this.getUSDollar();
 	}
 	
 }

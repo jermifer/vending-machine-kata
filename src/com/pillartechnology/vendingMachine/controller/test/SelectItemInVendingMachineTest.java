@@ -1,25 +1,18 @@
 package com.pillartechnology.vendingMachine.controller.test;
 
-import static org.junit.Assert.*;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
+import com.pillartechnology.vendingMachine.controller.ProductSelectionController;
 import com.pillartechnology.vendingMachine.model.Catalog;
-import com.pillartechnology.vendingMachine.model.Display;
+import com.pillartechnology.vendingMachine.model.VendingMachineDisplay;
 import com.pillartechnology.vendingMachine.model.Price;
-import com.pillartechnology.vendingMachine.model.SaleController;
 
 import org.jmock.Mockery;
-import org.jmock.integration.junit4.JUnitRuleMockery;
+import org.jmock.integration.junit4.JUnit4Mockery;
 import org.jmock.Expectations;
 
 public class SelectItemInVendingMachineTest {
-	/**********************************************************************************************
-	 * TESTS
-	 **********************************************************************************************/
-
-	private Mockery mockery = new Mockery();
+	private Mockery context = new JUnit4Mockery();
 
 	/**********************************************************************************************
 	 * TESTPRODUCTEXISTSININVENTORY
@@ -28,20 +21,19 @@ public class SelectItemInVendingMachineTest {
 	 */
 	@Test
 	public final void testproductExistsInInventory() {
-		final Catalog inventory = mockery.mock(Catalog.class);
-		final Display display = mockery.mock(Display.class);
+		final Catalog inventory = context.mock(Catalog.class);
+		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
 		
-		mockery.checking(new Expectations() {
+		context.checking(new Expectations() {
 			{
-				allowing(inventory).findPrice(with("M&Ms")); //"stub" implementation returns hard-coded data
+				allowing(inventory).findPrice(with("M&Ms"));
 				will(returnValue(Price.usCents(100)));
-				
 				oneOf(display).displayInventoryItemPrice(Price.usCents(100));
 			}
 		});
 		
-		SaleController saleController = new SaleController(inventory, display);
-		saleController.onSelectItem("M&Ms");
+		ProductSelectionController productSelectionController = new ProductSelectionController(inventory, display);
+		productSelectionController.onSelectItem("M&Ms");
 	}
 	
 	/**********************************************************************************************
@@ -51,10 +43,10 @@ public class SelectItemInVendingMachineTest {
 	 */
 	@Test
 	public final void testproductDoesNotExistInInventory() throws Exception {
-		final Catalog inventory = mockery.mock(Catalog.class);
-		final Display display = mockery.mock(Display.class);
+		final Catalog inventory = context.mock(Catalog.class);
+		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
 		
-		mockery.checking(new Expectations() {
+		context.checking(new Expectations() {
 			{
 				allowing(inventory).findPrice(with("M&Ms"));
 				will(returnValue(null));
@@ -63,7 +55,7 @@ public class SelectItemInVendingMachineTest {
 			}
 		});
 		
-		SaleController saleController = new SaleController(inventory, display);
+		ProductSelectionController saleController = new ProductSelectionController(inventory, display);
 		saleController.onSelectItem("M&Ms");
 	}
 }

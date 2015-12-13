@@ -6,7 +6,6 @@ import java.util.Collections;
 
 import org.junit.Test;
 
-import com.pillartechnology.vendingMachine.controller.test.SelectItemInVendingMachineTest.*;
 import com.pillartechnology.vendingMachine.model.Catalog;
 import com.pillartechnology.vendingMachine.model.InMemoryInventory;
 import com.pillartechnology.vendingMachine.model.Price;

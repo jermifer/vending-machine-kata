@@ -1,16 +1,20 @@
-package com.pillartechnology.vendingMachine.model;
+package com.pillartechnology.vendingMachine.controller;
+
+import com.pillartechnology.vendingMachine.model.Catalog;
+import com.pillartechnology.vendingMachine.model.VendingMachineDisplay;
+import com.pillartechnology.vendingMachine.model.Price;
 
 /**********************************************************************************************
- * SALE CONTROLLER CLASS
+ * PRODUCT CONTROLLER CLASS
  * @author jennifer.mankin
  *
  */
-public class SaleController {
+public class ProductSelectionController {
 
-	private final Display display;
+	private final VendingMachineDisplay display;
 	private Catalog inventory;
 
-	public SaleController(Catalog inventory, Display display) {
+	public ProductSelectionController(Catalog inventory, VendingMachineDisplay display) {
 		this.inventory = inventory;
 		this.display = display;
 	}

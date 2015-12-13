@@ -5,7 +5,7 @@ package com.pillartechnology.vendingMachine.model;
  * @author jennifer.mankin
  *
  */
-public interface Display {
+public interface VendingMachineDisplay {
 
 	void displayInventoryItemPrice(Price price);
 

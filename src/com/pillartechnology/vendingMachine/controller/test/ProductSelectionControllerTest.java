@@ -3,14 +3,8 @@ package com.pillartechnology.vendingMachine.controller.test;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.jmock.Mockery;
-import org.jmock.States;
-import org.jmock.integration.junit4.JUnit4Mockery;
 import org.jmock.integration.junit4.JUnitRuleMockery;
 
-import static org.junit.Assert.*;
-
-import org.hamcrest.Matcher;
 import org.jmock.Expectations;
 
 public class ProductSelectionControllerTest {
@@ -57,13 +51,16 @@ public class ProductSelectionControllerTest {
 
 		boolean isCompleteProductCode(Integer input);
 
+		//product.quantityInStock() > 0
+		boolean isPurchasable(VendingMachineInventoryItem product);
+
 	}
 	
-	public class VendingMachineInventoryItem {
+	public interface VendingMachineInventoryItem {
 
-		public String productName() {
-			return "M&Ms";
-		}
+		public String productName();
+
+		public Integer quantityInStock();
 
 	}
 	
@@ -110,16 +107,16 @@ public class ProductSelectionControllerTest {
 				//try to find the product in the inventory
 				VendingMachineInventoryItem product = this.inventory.findProduct(input);
 				
-				//product wasn't found
-				if( product == null ) {
-					this.display.messageInvalidSelection();
-					
-				//product was found, complete purchase
-				} else {
+				//product was found and is in stock
+				if( this.selection.isPurchasable( product ) ) {
 					this.fundsService.makeChange();
 					this.fundsService.addFundsToRespository();
 					this.selection.clearInputs();
 					this.display.promptProductDispensed(product.productName());
+					
+				//product was not found
+				} else {
+					this.display.messageInvalidSelection();
 				}
 			}
 		}
@@ -142,6 +139,7 @@ public class ProductSelectionControllerTest {
 		
 		context.checking(new Expectations() {
 			{
+				//make sure that this method is always called
 				oneOf(selection).isCompleteProductCode( with(any(Integer.class)) );
 			}
 		});
@@ -160,6 +158,7 @@ public class ProductSelectionControllerTest {
 		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
 		final FundsService fundsService = context.mock(FundsService.class);
 		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
+		final VendingMachineInventoryItem product = context.mock(VendingMachineInventoryItem.class);
 		
 		final Integer input = 111;
 		final String productName = "M&Ms";
@@ -167,45 +166,26 @@ public class ProductSelectionControllerTest {
 		context.checking(new Expectations() {
 			{
 				oneOf(selection).isCompleteProductCode(input); 
-				will( returnValue(true) );
+					will( returnValue(true) );
 				
 				oneOf(inventory).findProduct( with(input) );
-				will(returnValue(new VendingMachineInventoryItem()));
+					will(returnValue(product));
+					
+				oneOf(selection).isPurchasable( with(any(VendingMachineInventoryItem.class)) );
+					will( returnValue(true) );
 				
-				allowing(fundsService).makeChange();
-				allowing(fundsService).addFundsToRespository();
-				allowing(selection).clearInputs();
-				allowing(display).promptProductDispensed(with(productName));
+				oneOf(product).productName();
+					will( returnValue(productName) );
+				
+				oneOf(fundsService).makeChange();
+				oneOf(fundsService).addFundsToRespository();
+				oneOf(selection).clearInputs();
+				oneOf(display).promptProductDispensed(with(productName));
 			}
 		});
 		
 		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
 		productSelectionController.onInput(111);
-	}
-	
-	/**********************************************************************************************
-	 * @author jennifer.mankin
-	 *
-	 */
-	@Test
-	public final void testMakeSelectionIncomplete() {
-		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
-		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
-		final FundsService fundsService = context.mock(FundsService.class);
-		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
-		
-		context.checking(new Expectations() {
-			{
-				oneOf(selection).isCompleteProductCode(with(3));
-				will(returnValue(false));
-				
-				//do nothing, wait for further input
-				;
-			}
-		});
-		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
-		productSelectionController.onInput(3);
 	}
 	
 	/**********************************************************************************************
@@ -227,7 +207,45 @@ public class ProductSelectionControllerTest {
 					will( returnValue(true) );
 				
 				oneOf(inventory).findProduct( with(input) );
-					will(returnValue(null));
+					will( returnValue(null) );
+					
+				oneOf(selection).isPurchasable( with(aNull(VendingMachineInventoryItem.class)) );
+					//b/c product wasn't found
+					will( returnValue(false) );
+				
+				oneOf(display).messageInvalidSelection();
+			}
+		});
+		
+		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
+		productSelectionController.onInput(input);
+	}
+
+	/**********************************************************************************************
+	 * @author jennifer.mankin
+	 *
+	 */
+	@Test
+	public final void testMakeSelectionProductOutOfStock() {
+		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
+		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
+		final FundsService fundsService = context.mock(FundsService.class);
+		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
+		final VendingMachineInventoryItem product = context.mock(VendingMachineInventoryItem.class);
+		
+		final Integer input = 300;
+		
+		context.checking(new Expectations() {
+			{
+				oneOf(selection).isCompleteProductCode(input); 
+					will( returnValue(true) );
+				
+				oneOf(inventory).findProduct( with(input) );
+					will(returnValue(product));
+					
+				oneOf(selection).isPurchasable( with(any(VendingMachineInventoryItem.class)) );
+					//b/c quantity of product in inventory is 0
+					will( returnValue(false) );
 				
 				oneOf(display).messageInvalidSelection();
 			}
@@ -248,6 +266,7 @@ public class ProductSelectionControllerTest {
 		final FundsService fundsService = context.mock(FundsService.class);
 		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
 		
+		//same behavior regardless of whether or not there is money on deposit
 		context.checking(new Expectations() {
 			{
 				oneOf(fundsService).refundFundsOnDeposit();

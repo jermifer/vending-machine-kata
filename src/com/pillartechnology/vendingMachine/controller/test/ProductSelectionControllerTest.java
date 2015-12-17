@@ -3,12 +3,6 @@ package com.pillartechnology.vendingMachine.controller.test;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.pillartechnology.vendingMachine.controller.test.PushButtonOnVendingMachineTest.FundsService;
-import com.pillartechnology.vendingMachine.controller.test.PushButtonOnVendingMachineTest.ProductSelectionController;
-import com.pillartechnology.vendingMachine.controller.test.PushButtonOnVendingMachineTest.VendingMachineDisplay;
-import com.pillartechnology.vendingMachine.controller.test.PushButtonOnVendingMachineTest.VendingMachineInventory;
-import com.pillartechnology.vendingMachine.controller.test.PushButtonOnVendingMachineTest.VendingMachineProductSelectionManager;
-
 import org.jmock.Mockery;
 import org.jmock.States;
 import org.jmock.integration.junit4.JUnit4Mockery;
@@ -20,6 +14,8 @@ import org.hamcrest.Matcher;
 import org.jmock.Expectations;
 
 public class ProductSelectionControllerTest {
+	@Rule public JUnitRuleMockery context = new JUnitRuleMockery();
+	
 	public interface VendingMachineInventory {
 
 		void findProduct(int productCode);
@@ -47,7 +43,7 @@ public class ProductSelectionControllerTest {
 
 		void promptProductDispensed(String productName);
 
-		void messageAmountOnDeposit(String formattedFundsOnDepositAmount);
+		void messageAmountOnDeposit(Integer fundsOnDepositAmount);
 
 	}
 
@@ -60,7 +56,7 @@ public class ProductSelectionControllerTest {
 	}
 	
 	public class VendingMachineInventoryItem {
-		
+		;
 	}
 	
 	public class ProductSelectionController {
@@ -79,42 +75,28 @@ public class ProductSelectionControllerTest {
 			this.fundsService = fundsService;
 		}
 
-		public void refundFundsOnDeposit() {
+		public void onRefund() {
 			this.fundsService.refundFundsOnDeposit();
 			this.selection.clearInputs();
 			this.display.messageMakeSelection();
 		}
 		
-		public void clearInputs() {
+		public void onClear() {
 			Integer deposit = this.fundsService.sumOfFundsOnDeposit(); 
-			
+
 			this.selection.clearInputs(); 
-			this.display.messageAmountOnDeposit(deposit.toString());
+			
+			if( deposit > 0 ) {
+				this.display.messageAmountOnDeposit(deposit);
+			} else {
+				this.display.messageMakeSelection();
 			}
 		}
-	}
 
-	@Rule public JUnitRuleMockery context = new JUnitRuleMockery();
-	
-	/*
-	 *	- ProductSelectionController::onInput(int codeInput) 
-	 *		- VendingMachineProductSelectionManager::isRefundCode
-	 *	  		- FundsService::returnFundsOnDeposit
-	 *  	- VendingMachineProductSelectionManager::isClearInputsCode
-	 *  		- VendingMachineProductSelectionManager::clearInputs
-	 *  	- VendingMachineProductSelectionManager::isReadyToFindItem
-	 *  		- True ? (item = Inventory::findItem) == null
-	 *  			- True ? Display::messageInvalidSelection
-	 *  			- False ? FundsService::canCompletePurchase
-	 *  				- True ? 
-	 *  					- FundsService::makeChange
-	 *  					- FundsService::addFundsToRespository
-	 *  					- Display::promptProductDispensed
-	 *  				- False ? Display::messageItemAmount
-	 *  		- False ? 
-	 *  			- VendingMachineProductSelectionManager::addInput
-	 *  			- Display::messageCurrentInputs
-	 */
+		public void onInput(int i) {
+			;
+		}
+	}
 
 	/**********************************************************************************************
 	 * @author jennifer.mankin
@@ -135,7 +117,7 @@ public class ProductSelectionControllerTest {
 		});
 		
 		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService);
-		productSelectionController.refundFundsOnDeposit();
+		productSelectionController.onRefund();
 	}
 	
 	/**********************************************************************************************
@@ -178,12 +160,13 @@ public class ProductSelectionControllerTest {
 		context.checking(new Expectations() {
 			{
 				oneOf(fundsService).sumOfFundsOnDeposit(); will(returnValue(0));
+				allowing(selection).clearInputs(); 
 				oneOf(display).messageMakeSelection();
 			}
 		});
 		
 		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService);
-		productSelectionController.clearInputs();
+		productSelectionController.onClear();
 	}
 	
 	/**********************************************************************************************
@@ -198,16 +181,16 @@ public class ProductSelectionControllerTest {
 		
 		context.checking(new Expectations() {
 			{
-				final String depositAmountFormatted = "$1";
+				final Integer depositAmount = 1;
 					
 				oneOf(fundsService).sumOfFundsOnDeposit(); will(returnValue(1));
 				allowing(selection).clearInputs(); 
-				allowing(display).messageAmountOnDeposit(depositAmountFormatted); 
+				allowing(display).messageAmountOnDeposit(depositAmount); 
 			}
 		});
 		
 		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService);
-		productSelectionController.clearInputs();
+		productSelectionController.onClear();
 	}
 	
 }

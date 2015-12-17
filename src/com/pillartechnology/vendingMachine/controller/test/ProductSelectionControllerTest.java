@@ -45,6 +45,8 @@ public class ProductSelectionControllerTest {
 
 		void messageAmountOnDeposit(Integer fundsOnDepositAmount);
 
+		void messageInvalidSelection();
+
 	}
 
 	public interface VendingMachineProductSelectionManager {
@@ -103,10 +105,15 @@ public class ProductSelectionControllerTest {
 		public void onInput(int i) {
 			VendingMachineInventoryItem product = this.inventory.findProduct(i);
 			
-			this.fundsService.makeChange();
-			this.fundsService.addFundsToRespository();
-			this.selection.clearInputs();
-			this.display.promptProductDispensed(product.productName());
+			if( product == null ) {
+				this.display.messageInvalidSelection();
+				
+			} else {
+				this.fundsService.makeChange();
+				this.fundsService.addFundsToRespository();
+				this.selection.clearInputs();
+				this.display.promptProductDispensed(product.productName());
+			}
 		}
 	}
 	
@@ -123,7 +130,7 @@ public class ProductSelectionControllerTest {
 		
 		context.checking(new Expectations() {
 			{
-				allowing(inventory).findProduct(with(111));
+				oneOf(inventory).findProduct(with(111));
 				will(returnValue(new VendingMachineInventoryItem()));
 				
 				allowing(fundsService).makeChange();
@@ -135,6 +142,30 @@ public class ProductSelectionControllerTest {
 		
 		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
 		productSelectionController.onInput(111);
+	}
+	
+	/**********************************************************************************************
+	 * @author jennifer.mankin
+	 *
+	 */
+	@Test
+	public final void testMakeSelectionProductNotFound() {
+		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
+		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
+		final FundsService fundsService = context.mock(FundsService.class);
+		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
+		
+		context.checking(new Expectations() {
+			{
+				oneOf(inventory).findProduct(with(300));
+				will(returnValue(null));
+				
+				oneOf(display).messageInvalidSelection();
+			}
+		});
+		
+		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
+		productSelectionController.onInput(300);
 	}
 
 	/**********************************************************************************************

@@ -18,7 +18,7 @@ public class ProductSelectionControllerTest {
 	
 	public interface VendingMachineInventory {
 
-		void findProduct(int productCode);
+		VendingMachineInventoryItem findProduct(int productCode);
 
 		String productName();
 
@@ -56,7 +56,11 @@ public class ProductSelectionControllerTest {
 	}
 	
 	public class VendingMachineInventoryItem {
-		;
+
+		public String productName() {
+			return "M&Ms";
+		}
+
 	}
 	
 	public class ProductSelectionController {
@@ -64,15 +68,18 @@ public class ProductSelectionControllerTest {
 		private final VendingMachineDisplay display;
 		private final VendingMachineProductSelectionManager selection;
 		private final FundsService fundsService;
+		private final VendingMachineInventory inventory;
 
 		public ProductSelectionController(
 			VendingMachineDisplay display, 
 			VendingMachineProductSelectionManager selection, 
-			FundsService fundsService
+			FundsService fundsService,
+			VendingMachineInventory inventory
 		) {
 			this.display = display;
 			this.selection = selection;
 			this.fundsService = fundsService;
+			this.inventory = inventory;
 		}
 
 		public void onRefund() {
@@ -94,30 +101,13 @@ public class ProductSelectionControllerTest {
 		}
 
 		public void onInput(int i) {
-			;
+			VendingMachineInventoryItem product = this.inventory.findProduct(i);
+			
+			this.fundsService.makeChange();
+			this.fundsService.addFundsToRespository();
+			this.selection.clearInputs();
+			this.display.promptProductDispensed(product.productName());
 		}
-	}
-
-	/**********************************************************************************************
-	 * @author jennifer.mankin
-	 *
-	 */
-	@Test
-	public final void testRefund() {
-		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
-		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
-		final FundsService fundsService = context.mock(FundsService.class);
-		
-		context.checking(new Expectations() {
-			{
-				oneOf(fundsService).refundFundsOnDeposit();
-				oneOf(selection).clearInputs();
-				oneOf(display).messageMakeSelection();
-			}
-		});
-		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService);
-		productSelectionController.onRefund();
 	}
 	
 	/**********************************************************************************************
@@ -136,15 +126,38 @@ public class ProductSelectionControllerTest {
 				allowing(inventory).findProduct(with(111));
 				will(returnValue(new VendingMachineInventoryItem()));
 				
-				oneOf(fundsService).makeChange();
-				oneOf(fundsService).addFundsToRespository();
-				oneOf(selection).clearInputs();
-				oneOf(display).promptProductDispensed(with(inventory.productName()));
+				allowing(fundsService).makeChange();
+				allowing(fundsService).addFundsToRespository();
+				allowing(selection).clearInputs();
+				allowing(display).promptProductDispensed(with("M&Ms"));
 			}
 		});
 		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService);
+		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
 		productSelectionController.onInput(111);
+	}
+
+	/**********************************************************************************************
+	 * @author jennifer.mankin
+	 *
+	 */
+	@Test
+	public final void testRefund() {
+		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
+		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
+		final FundsService fundsService = context.mock(FundsService.class);
+		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
+		
+		context.checking(new Expectations() {
+			{
+				oneOf(fundsService).refundFundsOnDeposit();
+				oneOf(selection).clearInputs();
+				oneOf(display).messageMakeSelection();
+			}
+		});
+		
+		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
+		productSelectionController.onRefund();
 	}
 	
 	/**********************************************************************************************
@@ -156,6 +169,7 @@ public class ProductSelectionControllerTest {
 		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
 		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
 		final FundsService fundsService = context.mock(FundsService.class);
+		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
 		
 		context.checking(new Expectations() {
 			{
@@ -165,7 +179,7 @@ public class ProductSelectionControllerTest {
 			}
 		});
 		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService);
+		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
 		productSelectionController.onClear();
 	}
 	
@@ -178,6 +192,7 @@ public class ProductSelectionControllerTest {
 		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
 		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
 		final FundsService fundsService = context.mock(FundsService.class);
+		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
 		
 		context.checking(new Expectations() {
 			{
@@ -185,11 +200,11 @@ public class ProductSelectionControllerTest {
 					
 				oneOf(fundsService).sumOfFundsOnDeposit(); will(returnValue(1));
 				allowing(selection).clearInputs(); 
-				allowing(display).messageAmountOnDeposit(depositAmount); 
+				oneOf(display).messageAmountOnDeposit(depositAmount); 
 			}
 		});
 		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService);
+		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
 		productSelectionController.onClear();
 	}
 	

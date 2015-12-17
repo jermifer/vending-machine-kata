@@ -18,7 +18,7 @@ public class ProductSelectionControllerTest {
 	
 	public interface VendingMachineInventory {
 
-		VendingMachineInventoryItem findProduct(int productCode);
+		VendingMachineInventoryItem findProduct(Integer productCode);
 
 		String productName();
 
@@ -51,9 +51,11 @@ public class ProductSelectionControllerTest {
 
 	public interface VendingMachineProductSelectionManager {
 
-		void isRefundCode(int with);
+		void isRefundCode(Integer input);
 
 		void clearInputs();
+
+		boolean isCompleteProductCode(Integer input);
 
 	}
 	
@@ -102,19 +104,50 @@ public class ProductSelectionControllerTest {
 			}
 		}
 
-		public void onInput(int i) {
-			VendingMachineInventoryItem product = this.inventory.findProduct(i);
-			
-			if( product == null ) {
-				this.display.messageInvalidSelection();
+		public void onInput(Integer input) {
+			//the input comprises a complete product code
+			if( this.selection.isCompleteProductCode(input) ) {
+				//try to find the product in the inventory
+				VendingMachineInventoryItem product = this.inventory.findProduct(input);
 				
-			} else {
-				this.fundsService.makeChange();
-				this.fundsService.addFundsToRespository();
-				this.selection.clearInputs();
-				this.display.promptProductDispensed(product.productName());
+				//product wasn't found
+				if( product == null ) {
+					this.display.messageInvalidSelection();
+					
+				//product was found, complete purchase
+				} else {
+					this.fundsService.makeChange();
+					this.fundsService.addFundsToRespository();
+					this.selection.clearInputs();
+					this.display.promptProductDispensed(product.productName());
+				}
 			}
 		}
+	}
+	
+	/***
+	 * TESTS BEGIN HERE
+	 */
+	
+	/**********************************************************************************************
+	 * @author jennifer.mankin
+	 *
+	 */
+	@Test
+	public final void testMakeSelection() {
+		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
+		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
+		final FundsService fundsService = context.mock(FundsService.class);
+		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
+		
+		context.checking(new Expectations() {
+			{
+				oneOf(selection).isCompleteProductCode( with(any(Integer.class)) );
+			}
+		});
+		
+		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
+		productSelectionController.onInput(1);
 	}
 	
 	/**********************************************************************************************
@@ -128,20 +161,51 @@ public class ProductSelectionControllerTest {
 		final FundsService fundsService = context.mock(FundsService.class);
 		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
 		
+		final Integer input = 111;
+		final String productName = "M&Ms";
+		
 		context.checking(new Expectations() {
 			{
-				oneOf(inventory).findProduct(with(111));
+				oneOf(selection).isCompleteProductCode(input); 
+				will( returnValue(true) );
+				
+				oneOf(inventory).findProduct( with(input) );
 				will(returnValue(new VendingMachineInventoryItem()));
 				
 				allowing(fundsService).makeChange();
 				allowing(fundsService).addFundsToRespository();
 				allowing(selection).clearInputs();
-				allowing(display).promptProductDispensed(with("M&Ms"));
+				allowing(display).promptProductDispensed(with(productName));
 			}
 		});
 		
 		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
 		productSelectionController.onInput(111);
+	}
+	
+	/**********************************************************************************************
+	 * @author jennifer.mankin
+	 *
+	 */
+	@Test
+	public final void testMakeSelectionIncomplete() {
+		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
+		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
+		final FundsService fundsService = context.mock(FundsService.class);
+		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
+		
+		context.checking(new Expectations() {
+			{
+				oneOf(selection).isCompleteProductCode(with(3));
+				will(returnValue(false));
+				
+				//do nothing, wait for further input
+				;
+			}
+		});
+		
+		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
+		productSelectionController.onInput(3);
 	}
 	
 	/**********************************************************************************************
@@ -155,17 +219,22 @@ public class ProductSelectionControllerTest {
 		final FundsService fundsService = context.mock(FundsService.class);
 		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
 		
+		final Integer input = 300;
+		
 		context.checking(new Expectations() {
 			{
-				oneOf(inventory).findProduct(with(300));
-				will(returnValue(null));
+				oneOf(selection).isCompleteProductCode(input); 
+					will( returnValue(true) );
+				
+				oneOf(inventory).findProduct( with(input) );
+					will(returnValue(null));
 				
 				oneOf(display).messageInvalidSelection();
 			}
 		});
 		
 		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
-		productSelectionController.onInput(300);
+		productSelectionController.onInput(input);
 	}
 
 	/**********************************************************************************************

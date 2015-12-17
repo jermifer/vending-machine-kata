@@ -1,0 +1,129 @@
+*
+ EVENTS
+ 	- FrontController::onLoad
+ 		- VendingMachineFactory::createSnackMachineExpectingThreeDigitCodeAcceptingOnlyUSCoins
+ 		- FundsService::isAbleToMakeChange
+ 			- True ? Display::messageInsertFunds
+ 			- False ? Display::messageExactAmountOnly
+ 		- Display::displayItemsAvailableForPurchase
+ 		- Display::displayFundsChoices
+ 		- Display::displayCodeInputDevice
+ 
+ 	- FrontController::onDeposit(String legalTenderType)
+ 		- legalTenderEntity = LegalTenderService::getLegalTenderByDenomination
+ 		- legalTenderEntity == null
+ 			- True ? FundsService::returnMostRecentDeposit
+ 			- False ? FundsController::onFunds(legalTenderEntity.legalTenderSpecification)
+ 
+	- ProductSelectionController::onInput(int codeInput) 
+		- VendingMachineProductSelectionManager::isRefundCode
+	  		- FundsService::returnFundsOnDeposit
+	  		
+  	- VendingMachineProductSelectionManager::isClearInputsCode
+  		- VendingMachineProductSelectionManager::clearInputs
+  		
+  	- VendingMachineProductSelectionManager::isReadyToFindItem
+  		- True ? (item = Inventory::findItem) == null
+  			- True ? Display::messageInvalidSelection
+  			- False ? FundsService::canCompletePurchase
+  				- True ? 
+  					- FundsService::makeChange
+  					- FundsService::addFundsToRespository
+  					- Display::promptProductDispensed
+  				- False ? Display::messageItemAmount
+  		- False ? 
+  			- VendingMachineProductSelectionManager::addInput
+  			- Display::messageCurrentInputs
+  
+  - FundsController::onFunds(LegalTenderSpecification)
+  	- isSuccessful = FundsService::depositFunds
+  		- True ? Display::messageAmountOnDeposit
+  		- False ? FundsService::returnMostRecentDeposit
+  
+  MODEL  
+	- InventoryItem|null <VendingMachineInventory>::findItem(int codeInput)
+	- InventoryItemsCollection|null <VendingMachineInventory>::getAllItems()
+	- InventoryItemsCollection|null <VendingMachineInventory>::removeItem()
+
+	- String <VendingMachineDisplay>::messageInsertFunds()
+	- String <VendingMachineDisplay>::messageItemAmount(int Inventory::itemAmount)
+	- String <VendingMachineDisplay>::messageExactAmountOnly()
+	- String <VendingMachineDisplay>::messageAmountOnDeposit(int FundsService:getAmountOnDeposit)
+	- String <VendingMachineDisplay>::messageInvalidSelection()
+	- String <VendingMachineDisplay>::messageCurrentInputs(int VendingMachineProductSelectionManager::inputs) 
+	- String <VendingMachineDisplay>::displayFundsChoices(LegalTenderService::getAllLegalTender)
+	- String <VendingMachineDisplay>::displayItemsAvailableForPurchase(InventoryItemsCollection VendingMachineInventory::getAllItems)
+	- String <VendingMachineDisplay>::displayCodeInputDevice()
+	- String <VendingMachineDisplay>::promptProductDispensed()
+
+	- int FundsService::makeChange()
+	- int FundsService::refundAllFundsOnDeposit()
+	- int FundsService::refundMostRecentDeposit()
+	- int FundsServcie::getSumOfFundsInRespository()
+	- int FundsServcie::getSumOfFundsInDespository()
+	- Boolean FundsService::depositFunds(LegalTenderEntity)
+	- void FundsService::addFundsToRespository(FundsRespository, LegalTenderCollection)
+	- void FundsService::addFundsToDespository(FundsDespository, LegalTenderCollection)
+	- Boolean FundsService::isAbleToMakeChange()
+	- Boolean FundsService::canCompletePurchase(int purchaseAmount)
+
+	- void FundsRespository(LegalTenderCollection)
+	- void FundsRespository::addFunds(LegalTenderEntity)
+	- int FundsRespository::getFundsAmount()
+	- void FundsRespository::removeFunds(int amount)
+
+	- void FundsDepository(LegalTenderCollection)
+	- void FundsDepository::addFunds(LegalTenderEntity)
+	- int FundsDepository::getFundsOnDeposit()
+	- void FundsDepository::removeFunds(int amount)
+
+	- int LegalTenderEntity::value()
+	- String LegalTenderEntity::toString()
+	- String LegalTenderEntity::denomination()
+	- String LegalTenderEntity::countryCode()
+	- Boolean LegalTenderEntity::isCoin()
+	- LegalTenderSpecification LegalTenderEntity::legalTenderSpecification()
+
+	- BigDecimal <LegalTenderSpecification>CoinSpecification::diameterInMillimeters()
+	- BigDecimal <LegalTenderSpecification>CoinSpecification::thicknessInMillimeters()
+	- BigDecimal <LegalTenderSpecification>CoinSpecification::massInGrams()
+	- BigDecimal <LegalTenderSpecification>CoinSpecification::materialCompositionCode()
+	- String <LegalTenderSpecification>CoinSpecification::toString()
+
+	- BigDecimal <LegalTenderSpecification>BanknoteSpecification::thicknessInMillimeters()
+	- BigDecimal <LegalTenderSpecification>BanknoteSpecification::widthInInches()
+	- BigDecimal <LegalTenderSpecification>BanknoteSpecification::lengthInInches()
+	- BigDecimal <LegalTenderSpecification>BanknoteSpecification::massInGrams()
+	- String <LegalTenderSpecification>CoinSpecification::toString()
+
+	- LegalTenderCollection LegalTenderFactory::createUSCoinsCollection(coinType[])
+
+	- LegalTenderCollection <LegalTenderCollection>::getAll()
+	- void <LegalTenderCollection>::addLegalTender()
+
+	- LegalTenderEntity LegalTenderService::getLegalTenderBySpecification(LegalTenderCollection, LegalTenderSpecification)
+	- LegalTenderEntity LegalTenderService::getLegalTenderByDenomination(LegalTenderCollection, String legalTenderType)
+	- LegalTenderEntity LegalTenderService::getLegalTenderByValue(LegalTenderCollection, int legalTenderValue)
+	- Boolean LegalTenderService::isValidLegalTender(LegalTenderCollection, LegalTenderEntity)
+	- String LegalTenderService::toString(value)
+
+	- enum usCoinTypes {PENNY,NICKEL,DIME,QUARTER,HALFDOLLAR,SILVERDOLLAR,GOLDDOLLAR,SUSANBANTHONY,SACAJAWEA}
+
+	- int <VendingMachineProductSelectionManager>::inputs()
+	- void <VendingMachineProductSelectionManager>::addInput(int codeInput)
+	- void <VendingMachineProductSelectionManager>::clearInputs()
+	- Boolean <VendingMachineProductSelectionManager>::isReadyToFindItem()
+	- Boolean <VendingMachineProductSelectionManager>::isRefundCode()
+	- Boolean <VendingMachineProductSelectionManager>::isClearInputsCode()
+
+	- VendingMachine VendingMachineFactory::createSnackMachineExpectingThreeDigitCodeAcceptingOnlyUSCoins
+
+	- <VendingMachine>::<VendingMachineInventory>
+	- <VendingMachine>::<VendingMachineDisplay>
+	- <VendingMachine>::<LegalTenderCollection>
+	- <VendingMachine>::<VendingMachineProductSelectionManager>
+
+INVENTORY CATALOG SAMPLE
+ Code	Location(x,y)	Name		Price(us cents)	Remaining
+ 001		1,1				M&Ms		100				10
+ 002		1,2				Starburst	60			1

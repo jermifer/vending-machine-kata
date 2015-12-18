@@ -1,13 +1,43 @@
 package com.pillartechnology.vendingMachine.controller.test;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import com.pillartechnology.vendingMachine.controller.test.ProductSelectionControllerTest.ProductSelectionHandler;
 
 import org.jmock.integration.junit4.JUnitRuleMockery;
 
 import org.jmock.Expectations;
 
 public class ProductSelectionControllerTest {
+	public class ProductSelectionHandler {
+		
+		private final VendingMachineDisplay display;
+		private final VendingMachineProductSelectionManager selection;
+		private final FundsService fundsService;
+		private final VendingMachineInventory inventory;
+		
+		public ProductSelectionHandler(
+			VendingMachineDisplay display, 
+			VendingMachineProductSelectionManager selection, 
+			FundsService fundsService,
+			VendingMachineInventory inventory	
+		) {
+			this.display = display;
+			this.selection = selection;
+			this.fundsService = fundsService;
+			this.inventory = inventory;
+		}
+
+		void refundDeposit() {
+			this.fundsService.refundFundsOnDeposit();
+			this.selection.clearInputs();
+			this.display.messageMakeSelection();
+		}
+
+	}
+
 	@Rule public JUnitRuleMockery context = new JUnitRuleMockery();
 	
 	public interface VendingMachineInventory {
@@ -73,23 +103,24 @@ public class ProductSelectionControllerTest {
 		private final VendingMachineProductSelectionManager selection;
 		private final FundsService fundsService;
 		private final VendingMachineInventory inventory;
+		private final ProductSelectionHandler handler;
 
 		public ProductSelectionController(
 			VendingMachineDisplay display, 
 			VendingMachineProductSelectionManager selection, 
 			FundsService fundsService,
-			VendingMachineInventory inventory
+			VendingMachineInventory inventory,
+			ProductSelectionHandler handler
 		) {
 			this.display = display;
 			this.selection = selection;
 			this.fundsService = fundsService;
 			this.inventory = inventory;
+			this.handler = handler;
 		}
 
 		public void onRefund() {
-			this.fundsService.refundFundsOnDeposit();
-			this.selection.clearInputs();
-			this.display.messageMakeSelection();
+			this.handler.refundDeposit();
 		}
 		
 		public void onClear() {
@@ -159,7 +190,27 @@ public class ProductSelectionControllerTest {
 	 * ********************************************************************************************
 	 * ********************************************************************************************
 	 * TESTS BEGIN HERE
+	 * @return 
 	 */
+	
+	private VendingMachineProductSelectionManager selection;
+	private VendingMachineDisplay display;
+	private FundsService fundsService;
+	private VendingMachineInventory inventory;
+	private VendingMachineInventoryItem product;
+	private ProductSelectionHandler handler;
+	private ProductSelectionController controller;
+	
+	@Before
+	public final void setup() {
+		selection = context.mock(VendingMachineProductSelectionManager.class);
+		display = context.mock(VendingMachineDisplay.class);
+		fundsService = context.mock(FundsService.class);
+		inventory = context.mock(VendingMachineInventory.class);
+		product = context.mock(VendingMachineInventoryItem.class);
+		handler = new ProductSelectionHandler(display, selection, fundsService, inventory);
+		controller = new ProductSelectionController(display, selection, fundsService, inventory, handler);
+	}
 	
 
 	/**********************************************************************************************
@@ -168,12 +219,6 @@ public class ProductSelectionControllerTest {
 	 */
 	@Test
 	public final void testMakeSelectionProductInStockPriceExceedsDeposit() {
-		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
-		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
-		final FundsService fundsService = context.mock(FundsService.class);
-		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
-		final VendingMachineInventoryItem product = context.mock(VendingMachineInventoryItem.class);
-		
 		final Integer input = 111;
 		final String productName = "M&Ms";
 		final Integer productPrice = 100;
@@ -203,8 +248,7 @@ public class ProductSelectionControllerTest {
 			}
 		});
 		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
-		productSelectionController.onInput(111);
+		controller.onInput(111);
 	}
 
 	/**********************************************************************************************
@@ -213,12 +257,6 @@ public class ProductSelectionControllerTest {
 	 */
 	@Test
 	public final void testMakeSelectionProductInStockFundsMatchPrice() {
-		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
-		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
-		final FundsService fundsService = context.mock(FundsService.class);
-		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
-		final VendingMachineInventoryItem product = context.mock(VendingMachineInventoryItem.class);
-		
 		final Integer input = 111;
 		final String productName = "M&Ms";
 		final Integer productPrice = 100;
@@ -251,8 +289,7 @@ public class ProductSelectionControllerTest {
 			}
 		});
 		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
-		productSelectionController.onInput(111);
+		controller.onInput(111);
 	}
 	
 	/**********************************************************************************************
@@ -261,12 +298,6 @@ public class ProductSelectionControllerTest {
 	 */
 	@Test
 	public final void testMakeSelectionProductInStockFundsExceedPriceAbleToMakeChange() {
-		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
-		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
-		final FundsService fundsService = context.mock(FundsService.class);
-		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
-		final VendingMachineInventoryItem product = context.mock(VendingMachineInventoryItem.class);
-		
 		final Integer input = 111;
 		final String productName = "M&Ms";
 		final Integer productPrice = 100;
@@ -303,8 +334,7 @@ public class ProductSelectionControllerTest {
 			}
 		});
 		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
-		productSelectionController.onInput(111);
+		controller.onInput(111);
 	}
 	
 	/**********************************************************************************************
@@ -313,12 +343,6 @@ public class ProductSelectionControllerTest {
 	 */
 	@Test
 	public final void testMakeSelectionProductInStockFundsExceedPriceExactChangeOnly() {
-		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
-		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
-		final FundsService fundsService = context.mock(FundsService.class);
-		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
-		final VendingMachineInventoryItem product = context.mock(VendingMachineInventoryItem.class);
-		
 		final Integer input = 111;
 		final String productName = "M&Ms";
 		final Integer productPrice = 100;
@@ -353,8 +377,7 @@ public class ProductSelectionControllerTest {
 			}
 		});
 		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
-		productSelectionController.onInput(111);
+		controller.onInput(111);
 	}
 	
 	/**********************************************************************************************
@@ -363,11 +386,6 @@ public class ProductSelectionControllerTest {
 	 */
 	@Test
 	public final void testMakeSelectionProductCodeIsIncomplete() {
-		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
-		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
-		final FundsService fundsService = context.mock(FundsService.class);
-		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
-		
 		context.checking(new Expectations() {
 			{
 				//make sure that this method is always called
@@ -376,8 +394,7 @@ public class ProductSelectionControllerTest {
 			}
 		});
 		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
-		productSelectionController.onInput(1);
+		controller.onInput(1);
 	}
 	
 	/**********************************************************************************************
@@ -386,11 +403,6 @@ public class ProductSelectionControllerTest {
 	 */
 	@Test
 	public final void testMakeSelectionProductCodeIsComplete() {
-		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
-		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
-		final FundsService fundsService = context.mock(FundsService.class);
-		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
-		
 		final Integer input = 123;
 		
 		context.checking(new Expectations() {
@@ -406,8 +418,7 @@ public class ProductSelectionControllerTest {
 			}
 		});
 		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
-		productSelectionController.onInput(123);
+		controller.onInput(123);
 	}
 	
 	/**********************************************************************************************
@@ -416,12 +427,6 @@ public class ProductSelectionControllerTest {
 	 */
 	@Test
 	public final void testMakeSelectionProductFound() {
-		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
-		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
-		final FundsService fundsService = context.mock(FundsService.class);
-		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
-		final VendingMachineInventoryItem product = context.mock(VendingMachineInventoryItem.class);
-		
 		final Integer input = 111;
 		final String productName = "M&Ms";
 		
@@ -445,8 +450,7 @@ public class ProductSelectionControllerTest {
 			}
 		});
 		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
-		productSelectionController.onInput(111);
+		controller.onInput(111);
 	}
 	
 	/**********************************************************************************************
@@ -455,11 +459,6 @@ public class ProductSelectionControllerTest {
 	 */
 	@Test
 	public final void testMakeSelectionProductNotFound() {
-		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
-		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
-		final FundsService fundsService = context.mock(FundsService.class);
-		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
-		
 		final Integer input = 300;
 		
 		context.checking(new Expectations() {
@@ -478,8 +477,7 @@ public class ProductSelectionControllerTest {
 			}
 		});
 		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
-		productSelectionController.onInput(input);
+		controller.onInput(input);
 	}
 
 	/**********************************************************************************************
@@ -488,12 +486,6 @@ public class ProductSelectionControllerTest {
 	 */
 	@Test
 	public final void testMakeSelectionProductOutOfStock() {
-		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
-		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
-		final FundsService fundsService = context.mock(FundsService.class);
-		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
-		final VendingMachineInventoryItem product = context.mock(VendingMachineInventoryItem.class);
-		
 		final Integer input = 300;
 		
 		context.checking(new Expectations() {
@@ -512,8 +504,7 @@ public class ProductSelectionControllerTest {
 			}
 		});
 		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
-		productSelectionController.onInput(input);
+		controller.onInput(input);
 	}
 
 	/**********************************************************************************************
@@ -522,11 +513,6 @@ public class ProductSelectionControllerTest {
 	 */
 	@Test
 	public final void testRefund() {
-		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
-		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
-		final FundsService fundsService = context.mock(FundsService.class);
-		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
-		
 		//same behavior regardless of whether or not there is money on deposit
 		context.checking(new Expectations() {
 			{
@@ -536,8 +522,7 @@ public class ProductSelectionControllerTest {
 			}
 		});
 		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
-		productSelectionController.onRefund();
+		controller.onRefund();
 	}
 	
 	/**********************************************************************************************
@@ -546,11 +531,6 @@ public class ProductSelectionControllerTest {
 	 */
 	@Test
 	public final void testClear() {
-		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
-		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
-		final FundsService fundsService = context.mock(FundsService.class);
-		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
-		
 		context.checking(new Expectations() {
 			{
 				oneOf(fundsService).sumOfFundsOnDeposit(); 
@@ -561,8 +541,7 @@ public class ProductSelectionControllerTest {
 			}
 		});
 		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
-		productSelectionController.onClear();
+		controller.onClear();
 	}
 	
 	/**********************************************************************************************
@@ -571,11 +550,6 @@ public class ProductSelectionControllerTest {
 	 */
 	@Test
 	public final void testClearWhenNoFundsOnDeposit() {
-		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
-		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
-		final FundsService fundsService = context.mock(FundsService.class);
-		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
-		
 		context.checking(new Expectations() {
 			{
 				oneOf(fundsService).sumOfFundsOnDeposit(); will(returnValue(0));
@@ -584,8 +558,7 @@ public class ProductSelectionControllerTest {
 			}
 		});
 		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
-		productSelectionController.onClear();
+		controller.onClear();
 	}
 	
 	/**********************************************************************************************
@@ -594,11 +567,6 @@ public class ProductSelectionControllerTest {
 	 */
 	@Test
 	public final void testClearWhenFundsOnDeposit() {
-		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
-		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
-		final FundsService fundsService = context.mock(FundsService.class);
-		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
-		
 		final Integer depositAmount = 1;
 		
 		context.checking(new Expectations() {
@@ -611,9 +579,8 @@ public class ProductSelectionControllerTest {
 				oneOf(display).messageAmountOnDeposit(depositAmount); 
 			}
 		});
-		
-		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
-		productSelectionController.onClear();
+
+		controller.onClear();
 	}
 	
 }

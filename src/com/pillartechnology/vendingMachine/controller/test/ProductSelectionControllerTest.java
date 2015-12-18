@@ -255,6 +255,57 @@ public class ProductSelectionControllerTest {
 		productSelectionController.onInput(111);
 	}
 	
+	/**********************************************************************************************
+	 * @author jennifer.mankin
+	 *
+	 */
+	@Test
+	public final void testMakeSelectionProductInStockFundsExceedPriceAbleToMakeChange() {
+		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
+		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
+		final FundsService fundsService = context.mock(FundsService.class);
+		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
+		final VendingMachineInventoryItem product = context.mock(VendingMachineInventoryItem.class);
+		
+		final Integer input = 111;
+		final String productName = "M&Ms";
+		final Integer productPrice = 100;
+		
+		context.checking(new Expectations() {
+			{
+				oneOf(selection).isCompleteProductCode(input); 
+					will( returnValue(true) );
+				
+				oneOf(inventory).findProduct( with(input) );
+					will(returnValue(product));
+				
+				oneOf(selection).isPurchasable( with(any(VendingMachineInventoryItem.class)) );
+					will( returnValue(true) );
+				
+				oneOf(product).productPrice();
+					will( returnValue(productPrice) );
+				
+				oneOf(fundsService).sumOfFundsOnDeposit();
+					will( returnValue(productPrice+10) );
+					
+				oneOf(fundsService).isAbleToMakeChange();
+					will( returnValue(true) );
+					
+				oneOf(product).productName();
+					will( returnValue(productName) );
+				
+				oneOf(fundsService).makeChange();
+				oneOf(fundsService).addFundsToRespository( productPrice );
+				oneOf(selection).clearInputs();
+				oneOf(display).promptProductDispensed( with(productName) );
+				
+				never(fundsService).refundFundsOnDeposit();
+			}
+		});
+		
+		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
+		productSelectionController.onInput(111);
+	}
 	
 	/**********************************************************************************************
 	 * @author jennifer.mankin
@@ -294,7 +345,6 @@ public class ProductSelectionControllerTest {
 				
 				never(fundsService).makeChange();
 				never(fundsService).addFundsToRespository( productPrice );
-				never(selection).clearInputs();
 				never(display).promptProductDispensed( with(productName) );
 				
 				oneOf(fundsService).refundFundsOnDeposit();

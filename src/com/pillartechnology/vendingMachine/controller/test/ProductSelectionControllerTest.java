@@ -47,6 +47,8 @@ public class ProductSelectionControllerTest {
 
 		void messageInvalidSelection();
 
+		void messageProductCost(Integer productCost);
+
 	}
 
 	public interface VendingMachineProductSelectionManager {
@@ -111,20 +113,30 @@ public class ProductSelectionControllerTest {
 				if( this.selection.isPurchasable( product ) ) {
 					//get amount already deposited
 					Integer deposit = this.fundsService.sumOfFundsOnDeposit();
-
-					//clear out selection, so next one can proceed
-					this.selection.clearInputs();
-
-					//output product dispensed to console
-					this.display.promptProductDispensed(product.productName());
 					
-					//amount of funds on deposit exceeds cost of product
-					if( deposit > product.productPrice() ) {
-						this.fundsService.makeChange();
+					//get cost of product
+					Integer productPrice = product.productPrice();
+					
+					//not enough funds to buy product
+					if( deposit < productPrice ) {
+						this.display.messageProductCost(productPrice);
+						
+					//funds cover cost of product
+					} else {
+						//move funds equaling the price of the product into the repository  
+						this.fundsService.addFundsToRespository( productPrice );
+
+						//clear out selection, so next one can proceed
+						this.selection.clearInputs();
+
+						//output product dispensed to console
+						this.display.promptProductDispensed(product.productName());
+						
+						//amount of funds on deposit exceeds cost of product
+						if( deposit > productPrice ) {
+							this.fundsService.makeChange();
+						}
 					}
-					
-					//move funds equaling the price of the product into the repository  
-					this.fundsService.addFundsToRespository( product.productPrice() );
 					
 				//product was not found or is not in stock
 				} else {
@@ -134,7 +146,9 @@ public class ProductSelectionControllerTest {
 		}
 	}
 	
-	/***
+	/**********************************************************************************************
+	 * ********************************************************************************************
+	 * ********************************************************************************************
 	 * TESTS BEGIN HERE
 	 */
 	
@@ -144,7 +158,7 @@ public class ProductSelectionControllerTest {
 	 *
 	 */
 	@Test
-	public final void testMakeSelectionFundsExceedPrice() {
+	public final void testMakeSelectionProductInStockPriceExceedsDeposit() {
 		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
 		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
 		final FundsService fundsService = context.mock(FundsService.class);
@@ -153,6 +167,7 @@ public class ProductSelectionControllerTest {
 		
 		final Integer input = 111;
 		final String productName = "M&Ms";
+		final Integer productPrice = 100;
 		
 		context.checking(new Expectations() {
 			{
@@ -165,13 +180,17 @@ public class ProductSelectionControllerTest {
 				oneOf(selection).isPurchasable( with(any(VendingMachineInventoryItem.class)) );
 					will( returnValue(true) );
 				
-				oneOf(product).productName();
-					will( returnValue(productName) );
+				oneOf(product).productPrice();
+					will( returnValue(productPrice) );
+					
+				oneOf(fundsService).sumOfFundsOnDeposit();
+					will( returnValue(productPrice-10) );
 				
-				oneOf(fundsService).makeChange();
-				oneOf(fundsService).addFundsToRespository();
-				oneOf(selection).clearInputs();
-				oneOf(display).promptProductDispensed(with(productName));
+				never(fundsService).makeChange();
+				never(fundsService).addFundsToRespository(productPrice);
+				never(selection).clearInputs();
+				
+				oneOf(display).messageProductCost( with(productPrice) );
 			}
 		});
 		
@@ -184,7 +203,7 @@ public class ProductSelectionControllerTest {
 	 *
 	 */
 	@Test
-	public final void testMakeSelectionFundsMatchPrice() {
+	public final void testMakeSelectionProductInStockFundsMatchPrice() {
 		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
 		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
 		final FundsService fundsService = context.mock(FundsService.class);
@@ -193,6 +212,7 @@ public class ProductSelectionControllerTest {
 		
 		final Integer input = 111;
 		final String productName = "M&Ms";
+		final Integer productPrice = 100;
 		
 		context.checking(new Expectations() {
 			{
@@ -204,19 +224,19 @@ public class ProductSelectionControllerTest {
 					
 				oneOf(selection).isPurchasable( with(any(VendingMachineInventoryItem.class)) );
 					will( returnValue(true) );
+
+				oneOf(product).productPrice();
+					will( returnValue(productPrice) );
 					
 				oneOf(fundsService).sumOfFundsOnDeposit();
-					will( returnValue(100) );
-					
-				oneOf(product).productPrice();
-					will( returnValue(100) );
+					will( returnValue(productPrice) );
 				
 				oneOf(product).productName();
 					will( returnValue(productName) );
 				
-				oneOf(fundsService).addFundsToRespository();
+				oneOf(fundsService).addFundsToRespository( productPrice );
 				oneOf(selection).clearInputs();
-				oneOf(display).promptProductDispensed(with(productName));
+				oneOf(display).promptProductDispensed( with(productName) );
 			}
 		});
 		
@@ -301,15 +321,14 @@ public class ProductSelectionControllerTest {
 					will(returnValue(product));
 					
 				oneOf(selection).isPurchasable( with(any(VendingMachineInventoryItem.class)) );
-					will( returnValue(true) );
 				
-				oneOf(product).productName();
-					will( returnValue(productName) );
-				
-				oneOf(fundsService).makeChange();
-				oneOf(fundsService).addFundsToRespository();
-				oneOf(selection).clearInputs();
-				oneOf(display).promptProductDispensed(with(productName));
+				allowing(product).productName();
+				allowing(product).productPrice();
+				allowing(fundsService).makeChange();
+				allowing(fundsService).addFundsToRespository( 100 );
+				allowing(selection).clearInputs();
+				allowing(display).promptProductDispensed( with(productName) );
+				allowing(display).messageInvalidSelection();
 			}
 		});
 		

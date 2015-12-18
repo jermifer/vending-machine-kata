@@ -1,5 +1,6 @@
 package com.pillartechnology.vendingMachine.controller.productSelection;
 
+import com.pillartechnology.vendingMachine.controller.test.ProductSelectionControllerTest.ProductSelectionLibrary;
 import com.pillartechnology.vendingMachine.model.FundsService;
 import com.pillartechnology.vendingMachine.model.VendingMachineProductSelectionManager;
 import com.pillartechnology.vendingMachine.view.VendingMachineDisplay;
@@ -11,13 +12,11 @@ public class ProductSelectionHandler {
 	private final FundsService fundsService;
 	
 	public ProductSelectionHandler( 
-		VendingMachineDisplay display, 
-		VendingMachineProductSelectionManager selection, 
-		FundsService fundsService 
+		ProductSelectionLibrary library
 	) {
-		this.display = display;
-		this.selection = selection;
-		this.fundsService = fundsService;
+		this.display = library.display;
+		this.selection = library.selection;
+		this.fundsService = library.fundsService;
 	}
 
 	public void refundDeposit() {
@@ -63,6 +62,10 @@ public class ProductSelectionHandler {
 
 	public void returnChangeDueAfterPurchase() {
 		this.fundsService.makeChange();
+	}
+
+	public void rejectSelection() {
+		this.display.messageInvalidSelection();
 	}
 
 }

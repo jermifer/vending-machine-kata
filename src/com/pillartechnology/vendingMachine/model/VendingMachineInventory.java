@@ -1,4 +1,4 @@
-package com.pillartechnology.vendingMachine.model.VendingMachineInventory;
+package com.pillartechnology.vendingMachine.model;
 
 public interface VendingMachineInventory {
 

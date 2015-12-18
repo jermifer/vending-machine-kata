@@ -1,30 +1,25 @@
 package com.pillartechnology.vendingMachine.controller.productSelection;
 
+import com.pillartechnology.vendingMachine.controller.test.ProductSelectionControllerTest.ProductSelectionLibrary;
 import com.pillartechnology.vendingMachine.model.FundsService;
+import com.pillartechnology.vendingMachine.model.VendingMachineInventory;
+import com.pillartechnology.vendingMachine.model.VendingMachineInventoryItem;
 import com.pillartechnology.vendingMachine.model.VendingMachineProductSelectionManager;
-import com.pillartechnology.vendingMachine.model.VendingMachineInventory.VendingMachineInventory;
-import com.pillartechnology.vendingMachine.model.VendingMachineInventory.VendingMachineInventoryItem;
 import com.pillartechnology.vendingMachine.view.VendingMachineDisplay;
 
 public class ProductSelectionController {
 
-	private final VendingMachineDisplay display;
 	private final VendingMachineProductSelectionManager selection;
 	private final FundsService fundsService;
 	private final VendingMachineInventory inventory;
 	private final ProductSelectionHandler handler;
 
 	public ProductSelectionController(
-		VendingMachineDisplay display, 
-		VendingMachineProductSelectionManager selection, 
-		FundsService fundsService,
-		VendingMachineInventory inventory,
-		ProductSelectionHandler handler
+		ProductSelectionLibrary library, ProductSelectionHandler handler
 	) {
-		this.display = display;
-		this.selection = selection;
-		this.fundsService = fundsService;
-		this.inventory = inventory;
+		this.selection = library.selection;
+		this.fundsService = library.fundsService;
+		this.inventory = library.inventory;
 		this.handler = handler;
 	}
 
@@ -52,11 +47,8 @@ public class ProductSelectionController {
 			VendingMachineInventoryItem product = this.inventory.findProduct(input);
 			
 			//product was found and is in stock
-			if( this.selection.isPurchasable( product ) ) {
-				//get amount already deposited
+			if( this.selection.isPurchasable(product) ) {
 				Integer deposit = this.fundsService.sumOfFundsOnDeposit();
-				
-				//get cost of product
 				Integer productPrice = product.productPrice();
 				
 				//not enough funds to buy product
@@ -81,7 +73,7 @@ public class ProductSelectionController {
 				
 			//product was not found or is not in stock
 			} else {
-				this.display.messageInvalidSelection();
+				this.handler.rejectSelection();
 			}
 		}
 	}

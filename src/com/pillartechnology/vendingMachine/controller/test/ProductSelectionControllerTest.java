@@ -7,9 +7,9 @@ import org.junit.Test;
 import com.pillartechnology.vendingMachine.controller.productSelection.ProductSelectionController;
 import com.pillartechnology.vendingMachine.controller.productSelection.ProductSelectionHandler;
 import com.pillartechnology.vendingMachine.model.FundsService;
+import com.pillartechnology.vendingMachine.model.VendingMachineInventory;
+import com.pillartechnology.vendingMachine.model.VendingMachineInventoryItem;
 import com.pillartechnology.vendingMachine.model.VendingMachineProductSelectionManager;
-import com.pillartechnology.vendingMachine.model.VendingMachineInventory.VendingMachineInventory;
-import com.pillartechnology.vendingMachine.model.VendingMachineInventory.VendingMachineInventoryItem;
 import com.pillartechnology.vendingMachine.view.VendingMachineDisplay;
 
 import org.jmock.integration.junit4.JUnitRuleMockery;
@@ -19,6 +19,27 @@ import org.jmock.Expectations;
 public class ProductSelectionControllerTest {
 	@Rule public JUnitRuleMockery context = new JUnitRuleMockery();
 	
+	public class ProductSelectionLibrary {
+		
+		public final VendingMachineProductSelectionManager selection;
+		public final VendingMachineDisplay display;
+		public final FundsService fundsService;
+		public final VendingMachineInventory inventory;
+		
+		public ProductSelectionLibrary(
+			VendingMachineProductSelectionManager selection, 
+			VendingMachineDisplay display, 
+			FundsService fundsService, 
+			VendingMachineInventory inventory
+		) {
+			this.display = display;
+			this.selection = selection;
+			this.fundsService = fundsService;
+			this.inventory = inventory;
+		}
+		
+	}
+	
 	private VendingMachineProductSelectionManager selection;
 	private VendingMachineDisplay display;
 	private FundsService fundsService;
@@ -26,6 +47,7 @@ public class ProductSelectionControllerTest {
 	private VendingMachineInventoryItem product;
 	private ProductSelectionHandler handler;
 	private ProductSelectionController controller;
+	private ProductSelectionLibrary library;
 	
 	@Before
 	public final void setup() {
@@ -34,8 +56,9 @@ public class ProductSelectionControllerTest {
 		fundsService = context.mock(FundsService.class);
 		inventory = context.mock(VendingMachineInventory.class);
 		product = context.mock(VendingMachineInventoryItem.class);
-		handler = new ProductSelectionHandler(display, selection, fundsService);
-		controller = new ProductSelectionController(display, selection, fundsService, inventory, handler);
+		library = new ProductSelectionLibrary(selection, display, fundsService, inventory);
+		handler = new ProductSelectionHandler(library);
+		controller = new ProductSelectionController(library, handler);
 	}
 	
 

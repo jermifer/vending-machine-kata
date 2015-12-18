@@ -2,22 +2,11 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="C:/Users/jennifer.mankin/programs/jmock/bsh-core-2.0b4.jar"/>
-	<classpathentry kind="lib" path="C:/Users/jennifer.mankin/programs/jmock/cglib-nodep-2.2.3.jar"/>
-	<classpathentry kind="lib" path="C:/Users/jennifer.mankin/programs/jmock/jmock-2.6.0.jar"/>
-	<classpathentry kind="lib" path="C:/Users/jennifer.mankin/programs/jmock/jmock-junit3-2.6.0.jar"/>
-	<classpathentry kind="lib" path="C:/Users/jennifer.mankin/programs/jmock/jmock-junit4-2.6.0.jar"/>
-	<classpathentry kind="lib" path="C:/Users/jennifer.mankin/programs/jmock/jmock-legacy-2.6.0.jar"/>
-	<classpathentry kind="lib" path="C:/Users/jennifer.mankin/programs/jmock/jmock-script-2.6.0.jar"/>
-	<classpathentry kind="lib" path="C:/Users/jennifer.mankin/programs/jmock/objenesis-1.0.jar"/>
-	<classpathentry kind="lib" path="C:/Users/jennifer.mankin/programs/hamcrest/hamcrest-core-1.3.jar"/>
-	<classpathentry kind="lib" path="C:/Users/jennifer.mankin/programs/hamcrest/hamcrest-core-1.3-javadoc.jar"/>
-	<classpathentry kind="lib" path="C:/Users/jennifer.mankin/programs/hamcrest/hamcrest-core-1.3-sources.jar"/>
-	<classpathentry kind="lib" path="C:/Users/jennifer.mankin/programs/hamcrest/hamcrest-library-1.3.jar"/>
-	<classpathentry kind="lib" path="C:/Users/jennifer.mankin/programs/hamcrest/hamcrest-library-1.3-javadoc.jar"/>
-	<classpathentry kind="lib" path="C:/Users/jennifer.mankin/programs/hamcrest/hamcrest-library-1.3-sources.jar"/>
-	<classpathentry kind="lib" path="C:/Users/jennifer.mankin/programs/hamcrest/hamcrest-unit-test-1.3.jar"/>
-	<classpathentry kind="lib" path="C:/Users/jennifer.mankin/programs/hamcrest/hamcrest-unit-test-1.3-sources.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Hamcrest"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/BeanShell"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JUnit"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/cglib"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Objenesis"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/jMock"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

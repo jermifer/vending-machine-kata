@@ -35,6 +35,8 @@ public class ProductSelectionControllerTest {
 		void addFundsToRespository(Integer amount);
 
 		Integer sumOfFundsOnDeposit();
+
+		Boolean isAbleToMakeChange();
 	}
 
 	public interface VendingMachineDisplay {
@@ -49,6 +51,7 @@ public class ProductSelectionControllerTest {
 
 		void messageProductCost(Integer productCost);
 
+		void messageExactChangeOnly();
 	}
 
 	public interface VendingMachineProductSelectionManager {
@@ -121,7 +124,13 @@ public class ProductSelectionControllerTest {
 					if( deposit < productPrice ) {
 						this.display.messageProductCost(productPrice);
 						
-					//funds cover cost of product
+					//deposit exceeds cost of product and machine is not able to make change
+					} else if( deposit > productPrice && !fundsService.isAbleToMakeChange() ) {
+						this.fundsService.refundFundsOnDeposit();
+						this.selection.clearInputs();
+						this.display.messageExactChangeOnly();
+							
+					//purchase can be completed
 					} else {
 						//move funds equaling the price of the product into the repository  
 						this.fundsService.addFundsToRespository( productPrice );
@@ -233,10 +242,64 @@ public class ProductSelectionControllerTest {
 				
 				oneOf(product).productName();
 					will( returnValue(productName) );
+					
+				never(fundsService).makeChange();
 				
 				oneOf(fundsService).addFundsToRespository( productPrice );
 				oneOf(selection).clearInputs();
 				oneOf(display).promptProductDispensed( with(productName) );
+			}
+		});
+		
+		ProductSelectionController productSelectionController = new ProductSelectionController(display, selection, fundsService, inventory);
+		productSelectionController.onInput(111);
+	}
+	
+	
+	/**********************************************************************************************
+	 * @author jennifer.mankin
+	 *
+	 */
+	@Test
+	public final void testMakeSelectionProductInStockFundsExceedPriceExactChangeOnly() {
+		final VendingMachineProductSelectionManager selection = context.mock(VendingMachineProductSelectionManager.class);
+		final VendingMachineDisplay display = context.mock(VendingMachineDisplay.class);
+		final FundsService fundsService = context.mock(FundsService.class);
+		final VendingMachineInventory inventory = context.mock(VendingMachineInventory.class);
+		final VendingMachineInventoryItem product = context.mock(VendingMachineInventoryItem.class);
+		
+		final Integer input = 111;
+		final String productName = "M&Ms";
+		final Integer productPrice = 100;
+		
+		context.checking(new Expectations() {
+			{
+				oneOf(selection).isCompleteProductCode(input); 
+					will( returnValue(true) );
+				
+				oneOf(inventory).findProduct( with(input) );
+					will(returnValue(product));
+				
+				oneOf(selection).isPurchasable( with(any(VendingMachineInventoryItem.class)) );
+					will( returnValue(true) );
+				
+				oneOf(product).productPrice();
+					will( returnValue(productPrice) );
+				
+				oneOf(fundsService).sumOfFundsOnDeposit();
+					will( returnValue(productPrice+10) );
+					
+				oneOf(fundsService).isAbleToMakeChange();
+					will( returnValue(false) );
+				
+				never(fundsService).makeChange();
+				never(fundsService).addFundsToRespository( productPrice );
+				never(selection).clearInputs();
+				never(display).promptProductDispensed( with(productName) );
+				
+				oneOf(fundsService).refundFundsOnDeposit();
+				oneOf(selection).clearInputs();
+				oneOf(display).messageExactChangeOnly();
 			}
 		});
 		

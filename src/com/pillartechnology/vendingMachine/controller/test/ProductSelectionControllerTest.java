@@ -4,40 +4,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.pillartechnology.vendingMachine.controller.test.ProductSelectionControllerTest.ProductSelectionHandler;
-
 import org.jmock.integration.junit4.JUnitRuleMockery;
 
 import org.jmock.Expectations;
 
 public class ProductSelectionControllerTest {
-	public class ProductSelectionHandler {
-		
-		private final VendingMachineDisplay display;
-		private final VendingMachineProductSelectionManager selection;
-		private final FundsService fundsService;
-		private final VendingMachineInventory inventory;
-		
-		public ProductSelectionHandler(
-			VendingMachineDisplay display, 
-			VendingMachineProductSelectionManager selection, 
-			FundsService fundsService,
-			VendingMachineInventory inventory	
-		) {
-			this.display = display;
-			this.selection = selection;
-			this.fundsService = fundsService;
-			this.inventory = inventory;
-		}
-
-		void refundDeposit() {
-			this.fundsService.refundFundsOnDeposit();
-			this.selection.clearInputs();
-			this.display.messageMakeSelection();
-		}
-
-	}
-
 	@Rule public JUnitRuleMockery context = new JUnitRuleMockery();
 	
 	public interface VendingMachineInventory {
@@ -97,6 +68,69 @@ public class ProductSelectionControllerTest {
 
 	}
 	
+	public class ProductSelectionHandler {
+		
+		private final VendingMachineDisplay display;
+		private final VendingMachineProductSelectionManager selection;
+		private final FundsService fundsService;
+		
+		public ProductSelectionHandler( 
+			VendingMachineDisplay display, 
+			VendingMachineProductSelectionManager selection, 
+			FundsService fundsService 
+		) {
+			this.display = display;
+			this.selection = selection;
+			this.fundsService = fundsService;
+		}
+
+		public void refundDeposit() {
+			this.fundsService.refundFundsOnDeposit();
+			this.selection.clearInputs();
+			this.display.messageMakeSelection();
+		}
+		
+		private void _clearInputs() {
+			this.selection.clearInputs();
+		}
+
+		public void clearInputsWithFundsOnDeposit(Integer deposit) {
+			this._clearInputs();
+			this.display.messageAmountOnDeposit(deposit);
+		}
+
+		public void clearInputsWithoutFundsOnDeposit() {
+			this._clearInputs();
+			this.display.messageMakeSelection();
+		}
+
+		public void declinePurchaseForNotEnoughFunds(Integer productPrice) {
+			this.display.messageProductCost(productPrice);
+		}
+
+		public void declinePurchaseForTooMuchDeposited(Integer productPrice) {
+			this.fundsService.refundFundsOnDeposit();
+			this.selection.clearInputs();
+			this.display.messageExactChangeOnly();
+		}
+
+		public void completePurchase(Integer productPrice, String productName) {
+			//move funds equaling the price of the product into the repository  
+			this.fundsService.addFundsToRespository( productPrice );
+
+			//clear out selection, so next one can proceed
+			this.selection.clearInputs();
+
+			//output product dispensed to console
+			this.display.promptProductDispensed( productName );
+		}
+
+		public void returnChange() {
+			this.fundsService.makeChange();
+		}
+
+	}
+	
 	public class ProductSelectionController {
 
 		private final VendingMachineDisplay display;
@@ -126,12 +160,11 @@ public class ProductSelectionControllerTest {
 		public void onClear() {
 			Integer deposit = this.fundsService.sumOfFundsOnDeposit(); 
 
-			this.selection.clearInputs(); 
-			
 			if( deposit > 0 ) {
-				this.display.messageAmountOnDeposit(deposit);
+				this.handler.clearInputsWithFundsOnDeposit(deposit);
+
 			} else {
-				this.display.messageMakeSelection();
+				this.handler.clearInputsWithoutFundsOnDeposit();
 			}
 		}
 
@@ -153,28 +186,21 @@ public class ProductSelectionControllerTest {
 					
 					//not enough funds to buy product
 					if( deposit < productPrice ) {
-						this.display.messageProductCost(productPrice);
+						this.handler.declinePurchaseForNotEnoughFunds(productPrice);
 						
 					//deposit exceeds cost of product and machine is not able to make change
 					} else if( deposit > productPrice && !fundsService.isAbleToMakeChange() ) {
-						this.fundsService.refundFundsOnDeposit();
-						this.selection.clearInputs();
-						this.display.messageExactChangeOnly();
+						this.handler.declinePurchaseForTooMuchDeposited(productPrice);
 							
 					//purchase can be completed
 					} else {
-						//move funds equaling the price of the product into the repository  
-						this.fundsService.addFundsToRespository( productPrice );
-
-						//clear out selection, so next one can proceed
-						this.selection.clearInputs();
-
-						//output product dispensed to console
-						this.display.promptProductDispensed(product.productName());
+						String productName = product.productName();
+						
+						this.handler.completePurchase( productPrice, productName );
 						
 						//amount of funds on deposit exceeds cost of product
 						if( deposit > productPrice ) {
-							this.fundsService.makeChange();
+							this.handler.returnChange();
 						}
 					}
 					
@@ -208,7 +234,7 @@ public class ProductSelectionControllerTest {
 		fundsService = context.mock(FundsService.class);
 		inventory = context.mock(VendingMachineInventory.class);
 		product = context.mock(VendingMachineInventoryItem.class);
-		handler = new ProductSelectionHandler(display, selection, fundsService, inventory);
+		handler = new ProductSelectionHandler(display, selection, fundsService);
 		controller = new ProductSelectionController(display, selection, fundsService, inventory, handler);
 	}
 	

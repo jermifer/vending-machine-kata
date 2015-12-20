@@ -1,6 +1,6 @@
 package com.pillartechnology.vendingMachine.model.vendingMachineInventory;
 
-public interface VendingMachineInventory {
+public interface VendingMachineInventoryManager {
 
 	VendingMachineInventoryItem findProduct(Integer productCode);
 
